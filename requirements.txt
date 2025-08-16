@@ -6,4 +6,3 @@ Pillow
 google-genai
 SpeechRecognition
 gTTS
-pyaudio
