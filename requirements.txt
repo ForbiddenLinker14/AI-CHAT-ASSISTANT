@@ -6,5 +6,4 @@ Pillow
 google-genai
 SpeechRecognition
 gTTS
-streamlit-webrtc
 
