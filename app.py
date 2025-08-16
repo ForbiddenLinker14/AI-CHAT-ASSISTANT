@@ -182,26 +182,30 @@ if app_mode == "Chat AI Assistant":
 
     # 🎤 Continuous voice input loop
     if st.session_state["continuous_voice_chat"]:
-        recognizer = sr.Recognizer()
-        with sr.Microphone() as source:
-            try:
-                # Optional beep sound before listening
-                import sys
-                sys.stdout.write('\a')
-                sys.stdout.flush()
+        from st_audiorec import st_audiorec
 
-                st.info("🎙 Listening... Speak now.")
-                audio_data = recognizer.listen(source)
+if st.session_state["continuous_voice_chat"]:
+    st.info("🎙 Click below to record your voice:")
+    wav_audio_data = st_audiorec()  # 🎤 record in browser
+
+    if wav_audio_data is not None:
+        # Save temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+            tmp_file.write(wav_audio_data)
+            tmp_path = tmp_file.name
+
+        # Recognize speech from saved wav
+        recognizer = sr.Recognizer()
+        with sr.AudioFile(tmp_path) as source:
+            audio_data = recognizer.record(source)
+            try:
                 user_input = recognizer.recognize_google(audio_data)
                 st.success(f"🗣 You said: {user_input}")
-
             except sr.UnknownValueError:
                 st.warning("❌ Could not understand, please try again.")
-                st.rerun()  # Retry listening immediately
-
             except sr.RequestError as e:
                 st.error(f"❌ Speech recognition error: {e}")
-                st.rerun()  # Retry listening immediately
+
 
     # 📝 Text input fallback when voice mode is off
     if not st.session_state["continuous_voice_chat"]:
