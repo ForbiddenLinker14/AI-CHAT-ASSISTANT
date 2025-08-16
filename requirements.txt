@@ -1,0 +1,8 @@
+streamlit
+requests
+python-dotenv
+huggingface_hub
+Pillow
+google-genai
+SpeechRecognition
+gTTS
