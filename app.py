@@ -18,6 +18,11 @@ from gtts import gTTS
 import tempfile
 import time
 import requests
+import base64
+
+# 🔊 For browser mic
+from streamlit_webrtc import webrtc_streamer, WebRtcMode
+import av
 
 # =========================================================
 # 🔑 Load API Keys from .env
@@ -44,12 +49,8 @@ if not gemini_api_key:
 # 🤖 Initialize Clients
 # =========================================================
 hf_client = InferenceClient(provider="nebius", api_key=hf_token)  # Image Generation
-video_client = InferenceClient(
-    provider="replicate", api_key=hf_token
-)  # Video Generation
-classification_client = InferenceClient(
-    provider="hf-inference", api_key=hf_token
-)  # Image Classification
+video_client = InferenceClient(provider="replicate", api_key=hf_token)  # Video Generation
+classification_client = InferenceClient(provider="hf-inference", api_key=hf_token)  # Image Classification
 gemini_client = genai.Client(api_key=gemini_api_key)  # ✅ Gemini Client
 
 # =========================================================
@@ -58,103 +59,50 @@ gemini_client = genai.Client(api_key=gemini_api_key)  # ✅ Gemini Client
 st.set_page_config(page_title="AI Tools Suite", page_icon="💬")
 st.title("💬 Chat + 🖼 Image + 🎥 Video + 🏷 Classification AI")
 
-# ===================== CUSTOM THEME =====================
-st.markdown(
-    """
-<style>
-.stApp {background: linear-gradient(135deg, #000428, #004e92, #00aaff); color: #FAFAFA !important;}
-[data-testid="stSidebar"] {background: linear-gradient(180deg, #000428, #004e92, #00aaff); color: #FAFAFA !important;}
-[data-testid="stSidebar"] * {color: #FAFAFA !important;}
-html, body, [class*="css"] {color: #FAFAFA !important;}
-.stChatMessage {background: linear-gradient(135deg, rgba(0,4,40,0.4), rgba(0,78,146,0.4)); border: 1px solid #80dfff; border-radius: 10px; padding: 10px;}
-.stButton>button {background: linear-gradient(90deg, #000428, #004e92, #00aaff); color: #FFFFFF !important; border: none; border-radius: 8px; font-weight: bold;}
-.stButton>button:hover {background: linear-gradient(90deg, #00aaff, #004e92, #000428);}
-.stTextInput>div>div>input, .stTextArea textarea {background: linear-gradient(to right, rgba(0,0,0,0.2), rgba(0,0,0,0.1)); color: #FAFAFA !important; border-radius: 10px; border: 1px solid #80dfff; padding: 8px;}
-.stTextInput>div>div>input::placeholder, .stTextArea textarea::placeholder {color: #B0C4DE !important;}
-.stTextInput, .stTextArea {background: linear-gradient(135deg, #000428, #004e92, #00aaff); padding: 5px; border-radius: 12px;}
-.stPromptBox {background: linear-gradient(135deg, rgba(0,4,40,0.3), rgba(0,78,146,0.3)); padding: 10px; border-radius: 10px; border: 1px solid #80dfff;}
-hr {border-top: 1px solid #80dfff;}
-header[data-testid="stHeader"] {background: linear-gradient(90deg, #000428, #004e92, #00aaff) !important; color: #FAFAFA !important;}
-footer {visibility: hidden;}
-[data-testid="stBottomBlockContainer"] {background: linear-gradient(135deg, #000428, #004e92, #00aaff) !important; max-width: 100% !important; padding: 0.5rem 1rem 0.5rem !important;}
-[data-testid="stChatInput"] > div {max-width: 700px; width: 100%; margin-left: auto; margin-right: auto;}
-</style>
-""",
-    unsafe_allow_html=True,
-)
-
 # =========================================================
-# 📌 Sidebar Navigation (Dropdown & Chat Settings)
+# 📌 Sidebar Navigation
 # =========================================================
 with st.sidebar:
     st.header("Menu")
 
     app_mode = st.selectbox(
         "Choose a tool:",
-        (
-            "Chat AI Assistant",
-            "Text-to-Image Generator",
-            "Text-to-Video Generator",
-            "Image Classification",
-        ),
+        ("Chat AI Assistant", "Text-to-Image Generator", "Text-to-Video Generator", "Image Classification"),
         key="tool_selector",
     )
 
     st.header("Chat Settings")
 
     if app_mode == "Chat AI Assistant":
-        model_options = (
-            "llama3-8b-8192",
-            "gemini-2.5-flash",
-            "other-model-1",
-            "other-model-2",
-        )
+        model_options = ("llama3-8b-8192", "gemini-2.5-flash", "other-model-1", "other-model-2")
         default_model = "llama3-8b-8192"
-
     elif app_mode == "Text-to-Image Generator":
         model_options = ("gemini-2.5-flash", "other-model-1", "other-model-2")
         default_model = "gemini-2.5-flash"
-
     elif app_mode == "Text-to-Video Generator":
         model_options = ("Wan-AI/Wan2.2-TI2V-5B", "other-model-1", "other-model-2")
         default_model = "Wan-AI/Wan2.2-TI2V-5B"
-
     elif app_mode == "Image Classification":
-        model_options = (
-            "Falconsai/nsfw_image_detection",
-            "other-model-1",
-            "other-model-2",
-        )
+        model_options = ("Falconsai/nsfw_image_detection", "other-model-1", "other-model-2")
         default_model = "Falconsai/nsfw_image_detection"
 
-    chat_model = st.selectbox(
-        "Chat Model:",
-        model_options,
-        index=model_options.index(default_model),
-        key="chat_model_selector",
-    )
+    chat_model = st.selectbox("Chat Model:", model_options, index=model_options.index(default_model), key="chat_model_selector")
 
     st.markdown(
         '<div style="background: linear-gradient(135deg, #000428, #004e92, #00aaff); '
-        'padding: 10px; border-radius: 10px; color: #FAFAFA;">'
-        "<strong>System Prompt:</strong> Ask me anything!</div>",
+        'padding: 10px; border-radius: 10px; color: #FAFAFA;"><strong>System Prompt:</strong> Ask me anything!</div>',
         unsafe_allow_html=True,
     )
 
-    st.markdown("<br>", unsafe_allow_html=True)
     if st.button("Clear Chat / Data"):
-        # Clear all tools' session state
         st.session_state.clear()
 
 # =========================================================
-# 💬 Chat AI Assistant (Continuous Voice + Autoplay Update)
+# 💬 Chat AI Assistant (with browser mic)
 # =========================================================
-import base64  # Make sure this is at the top of your script
-
 if app_mode == "Chat AI Assistant":
     st.subheader("💬 Chat AI Assistant")
 
-    # Session state setup
     if "messages" not in st.session_state:
         st.session_state["messages"] = []
     if "continuous_voice_chat" not in st.session_state:
@@ -166,48 +114,41 @@ if app_mode == "Chat AI Assistant":
             st.markdown(msg["content"])
 
     enable_code_execution = False
-    enable_voice_chat = False
-
-    # Model-specific options
     if chat_model == "gemini-2.5-flash":
-        enable_code_execution = st.checkbox(
-            "⚡ Enable Code Execution for this query", value=False
-        )
-        enable_voice_chat = st.checkbox(
-            "🎤 Continuous Voice Chat Mode", value=False
-        )
-        st.session_state["continuous_voice_chat"] = enable_voice_chat
+        enable_code_execution = st.checkbox("⚡ Enable Code Execution for this query", value=False)
+        st.session_state["continuous_voice_chat"] = st.checkbox("🎤 Voice Chat Mode", value=False)
 
     user_input = None
 
-    # 🎤 Continuous voice input loop
+    # 🎤 Browser Mic Capture
     if st.session_state["continuous_voice_chat"]:
-        from st_audiorec import st_audiorec
+        st.info("🎙 Speak into your microphone...")
+        audio_file = "user_input.wav"
 
-if st.session_state["continuous_voice_chat"]:
-    st.info("🎙 Click below to record your voice:")
-    wav_audio_data = st_audiorec()  # 🎤 record in browser
+        def audio_callback(frame: av.AudioFrame):
+            audio = frame.to_ndarray().flatten().astype("int16")
+            with open(audio_file, "ab") as f:
+                f.write(audio.tobytes())
+            return frame
 
-    if wav_audio_data is not None:
-        # Save temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
-            tmp_file.write(wav_audio_data)
-            tmp_path = tmp_file.name
+        webrtc_streamer(
+            key="speech",
+            mode=WebRtcMode.SENDONLY,
+            audio_frame_callback=audio_callback,
+            media_stream_constraints={"audio": True, "video": False},
+        )
 
-        # Recognize speech from saved wav
-        recognizer = sr.Recognizer()
-        with sr.AudioFile(tmp_path) as source:
-            audio_data = recognizer.record(source)
+        if st.button("Transcribe Voice Input"):
+            recognizer = sr.Recognizer()
             try:
-                user_input = recognizer.recognize_google(audio_data)
-                st.success(f"🗣 You said: {user_input}")
-            except sr.UnknownValueError:
-                st.warning("❌ Could not understand, please try again.")
-            except sr.RequestError as e:
-                st.error(f"❌ Speech recognition error: {e}")
+                with sr.AudioFile(audio_file) as source:
+                    audio_data = recognizer.record(source)
+                    user_input = recognizer.recognize_google(audio_data)
+                    st.success(f"🗣 You said: {user_input}")
+            except Exception as e:
+                st.error(f"Speech recognition failed: {e}")
 
-
-    # 📝 Text input fallback when voice mode is off
+    # 📝 Text input fallback
     if not st.session_state["continuous_voice_chat"]:
         user_input = st.chat_input("Type your message...")
 
@@ -227,15 +168,10 @@ if st.session_state["continuous_voice_chat"]:
                 tools_list = [grounding_tool]
                 if enable_code_execution:
                     tools_list.append(types.Tool(code_execution=types.ToolCodeExecution()))
-
                 config = types.GenerateContentConfig(tools=tools_list)
-                combined_prompt = "\n".join(
-                    [f"{m['role']}: {m['content']}" for m in messages]
-                )
 
-                chat_session = gemini_client.chats.create(
-                    model="gemini-2.5-flash", config=config
-                )
+                combined_prompt = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
+                chat_session = gemini_client.chats.create(model="gemini-2.5-flash", config=config)
                 response = chat_session.send_message(combined_prompt)
 
                 ai_reply_parts = []
@@ -250,10 +186,7 @@ if st.session_state["continuous_voice_chat"]:
             else:
                 response = requests.post(
                     "https://api.groq.com/openai/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {groq_api_key}",
-                        "Content-Type": "application/json",
-                    },
+                    headers={"Authorization": f"Bearer {groq_api_key}", "Content-Type": "application/json"},
                     json={"model": chat_model, "messages": messages},
                 )
                 ai_reply = response.json()["choices"][0]["message"]["content"]
@@ -261,11 +194,10 @@ if st.session_state["continuous_voice_chat"]:
         except Exception as e:
             ai_reply = f"Error: {e}"
 
-        # Display AI reply
         with st.chat_message("assistant"):
             st.markdown(ai_reply)
 
-        # 🔊 Voice output in continuous mode with autoplay
+        # 🔊 Voice output
         if st.session_state["continuous_voice_chat"]:
             try:
                 tts = gTTS(text=ai_reply, lang="en")
@@ -273,23 +205,22 @@ if st.session_state["continuous_voice_chat"]:
                     tts.save(tmp_file.name)
                     audio_file_path = tmp_file.name
 
-                # Autoplay audio in browser using HTML
                 audio_html = f"""
                 <audio autoplay>
                     <source src="data:audio/mp3;base64,{base64.b64encode(open(audio_file_path, 'rb').read()).decode()}" type="audio/mp3">
                 </audio>
                 """
                 st.markdown(audio_html, unsafe_allow_html=True)
-
             except Exception as e:
                 st.error(f"❌ Voice output error: {e}")
 
-        # Save AI message
         st.session_state["messages"].append({"role": "assistant", "content": ai_reply})
 
-        # 🚀 Automatically listen for next voice input
-        if st.session_state["continuous_voice_chat"]:
-            st.rerun()
+# =========================================================
+# 🖼 Text-to-Image, 🎥 Text-to-Video, 🏷 Classification
+# (leave your existing code unchanged here)
+# =========================================================
+
 
 
 
@@ -423,3 +354,4 @@ elif app_mode == "Image Classification":
 # =========================================================
 st.markdown("---")
 st.caption("Made with ❤️ by Anit Saha")
+
