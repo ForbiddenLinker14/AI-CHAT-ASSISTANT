@@ -18,22 +18,7 @@ from gtts import gTTS
 import tempfile
 import time
 import requests
-
 import streamlit.components.v1 as components
-
-# =========================================================
-# 📜 Inject Popunder Ad (into <head>)
-# =========================================================
-components.html(
-    """
-    <script type='text/javascript'>
-        var script = document.createElement("script");
-        script.src = "//pl27448593.profitableratecpm.com/a5/35/0f/a5350f98f88d27271cdd55daad15e888.js";
-        document.head.appendChild(script);
-    </script>
-    """,
-    height=0,  # keep container invisible
-)
 
 # =========================================================
 # 🔑 Load API Keys from .env
@@ -161,6 +146,41 @@ with st.sidebar:
     if st.button("Clear Chat / Data"):
         # Clear all tools' session state
         st.session_state.clear()
+
+# =========================================================
+# 📜 Inject Popunder Ad (into <head>)
+# =========================================================
+components.html(
+    """
+    <script type='text/javascript'>
+        var script = document.createElement("script");
+        script.src = "//pl27448593.profitableratecpm.com/a5/35/0f/a5350f98f88d27271cdd55daad15e888.js";
+        document.head.appendChild(script);
+    </script>
+    """,
+    height=0,  # keep container invisible
+)
+
+# =========================================================
+# 📜 Inline Banner Ad (728x90)
+# =========================================================
+components.html(
+    """
+    <script type="text/javascript">
+        atOptions = {
+            'key' : 'ce19aabaaaceb5654105a6dfac8719ec',
+            'format' : 'iframe',
+            'height' : 90,
+            'width' : 728,
+            'params' : {}
+        };
+    </script>
+    <script type="text/javascript" src="//www.highperformanceformat.com/ce19aabaaaceb5654105a6dfac8719ec/invoke.js"></script>
+    """,
+    height=100,  # enough to fit 90px height
+    width=740,   # enough to fit 728px width
+    scrolling=False
+)        
 
 # =========================================================
 # 💬 Chat AI Assistant (Continuous Voice + Autoplay Update)
