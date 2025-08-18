@@ -483,44 +483,37 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ✅ Scrollbar Ad (JS works only in components.html)
+components.html(
+    """
+    <script type='text/javascript' 
+            src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
+    </script>
+    """,
+    height=300,   # adjust height to fit scrollbar ad
+    scrolling=True
+)
+
 # =========================================================
-# 📜 Third Banner Ad (Left) + Scrollbar Ad (Right)
+# 📜 Third Banner Ad (468x60)
 # =========================================================
-col1, col2 = st.columns([1, 2])  # give scrollbar more space
-
-with col1:
-    st.markdown("### Third Ad")
-    components.html(
-        """
-        <script type="text/javascript">
-        atOptions = {
-            'key' : '72e674d3fcf49ab599755d0eec4f9191',
-            'format' : 'iframe',
-            'height' : 250,
-            'width' : 300,
-            'params' : {}
-        };
-        </script>
-        <script type="text/javascript" src="//www.highperformanceformat.com/72e674d3fcf49ab599755d0eec4f9191/invoke.js"></script>
-        """,
-        height=270,   # slightly taller
-        width=320,    # enough space
-        scrolling=False,
-    )
-
-with col2:
-    st.markdown("### Scrollbar Ad")
-    components.html(
-        """
-        <script type='text/javascript' 
-                src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
-        </script>
-        """,
-        height=400,   # enough height for scrolling ad
-        width=600,    # wide enough container
-        scrolling=True
-    )
-
+components.html(
+    """
+    <script type="text/javascript">
+	atOptions = {
+		'key' : '72e674d3fcf49ab599755d0eec4f9191',
+		'format' : 'iframe',
+		'height' : 250,
+		'width' : 300,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//www.highperformanceformat.com/72e674d3fcf49ab599755d0eec4f9191/invoke.js"></script>
+    """,
+    height=260,   # a bit more than 250px
+    width=310,  # slightly bigger to fit 468px
+    scrolling=False,
+)
 
 # # ✅ Scrollbar Ads (Injected JS safely with components.html)
 # components.html(
