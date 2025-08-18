@@ -62,10 +62,10 @@ gemini_client = genai.Client(api_key=gemini_api_key)  # ✅ Gemini Client
 # =========================================================
 components.html(
     """
-    <script type="text/javascript" src="https://pl27448593.profitableratecpm.com/a5/35/0f/a5350f98f88d27271cdd55daad15e888.js"></script>
+   <script type='text/javascript' src='//pl27448593.profitableratecpm.com/a5/35/0f/a5350f98f88d27271cdd55daad15e888.js'></script>
     """,
-    height=0,   # keeps it invisible
-    width=0
+    height=0,  # keeps it invisible
+    width=0,
 )
 
 st.set_page_config(page_title="AI Tools Suite", page_icon="💬")
@@ -504,7 +504,18 @@ components.html(
     <div id="container-d4cd9731abd5eab614191a36354ee7bc"></div>
     """,
     height=300,  # Adjust depending on ad size
-    width=800,   # Adjust to fit your layout
+    width=800,  # Adjust to fit your layout
+    scrolling=False,
+)
+
+components.html(
+    """
+    <script type='text/javascript'
+      src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
+    </script>
+    """,
+    height=0,
+    width=0,
     scrolling=False,
 )
 
@@ -524,7 +535,7 @@ components.html(
 </script>
 <script type="text/javascript" src="//www.highperformanceformat.com/72e674d3fcf49ab599755d0eec4f9191/invoke.js"></script>
     """,
-    height=260,   # a bit more than 250px
+    height=260,  # a bit more than 250px
     width=310,  # slightly bigger to fit 468px
     scrolling=False,
 )
