@@ -148,20 +148,6 @@ with st.sidebar:
         st.session_state.clear()
 
 # =========================================================
-# 📜 Inject Popunder Ad (into <head>)
-# =========================================================
-components.html(
-    """
-    <script type='text/javascript'>
-        var script = document.createElement("script");
-        script.src = "//pl27448593.profitableratecpm.com/a5/35/0f/a5350f98f88d27271cdd55daad15e888.js";
-        document.head.appendChild(script);
-    </script>
-    """,
-    height=0,  # keep container invisible
-)
-
-# =========================================================
 # 📜 Inline Banner Ad (728x90)
 # =========================================================
 components.html(
@@ -463,10 +449,6 @@ st.caption("Made with ❤️ by Anit Saha")
 # =========================================================
 # 📜 Footer + Adsterra Ads
 # =========================================================
-import streamlit.components.v1 as components
-
-st.markdown("---")
-st.caption("Made with ❤️ by Anit Saha")
 
 # ✅ Direct Link Ad (iframe banner style)
 st.markdown(
@@ -487,7 +469,7 @@ components.html(
         src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
     </script>
     """,
-      # keeps it hidden, script still runs
+    height=0,  # keeps it hidden, script still runs
 )
 # ✅ Extra Direct Link Ad (iframe banner style)
 st.markdown(
@@ -499,4 +481,17 @@ st.markdown(
     </div>
     """,
     unsafe_allow_html=True,
+)
+# =========================================================
+# 📜 Inject Popunder Ad (into <head>)
+# =========================================================
+components.html(
+    """
+    <script type='text/javascript'>
+        var script = document.createElement("script");
+        script.src = "//pl27448593.profitableratecpm.com/a5/35/0f/a5350f98f88d27271cdd55daad15e888.js";
+        document.head.appendChild(script);
+    </script>
+    """,
+    height=0,  # keep container invisible
 )
