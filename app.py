@@ -486,10 +486,10 @@ st.markdown(
 # =========================================================
 # 📜 Third Banner Ad (Left) + Scrollbar Ad (Right)
 # =========================================================
-col1, col2 = st.columns([1, 1])  # 2 equal columns
+col1, col2 = st.columns([1, 2])  # give scrollbar more space
 
 with col1:
-    # Third Banner Ad
+    st.markdown("### Third Ad")
     components.html(
         """
         <script type="text/javascript">
@@ -503,20 +503,21 @@ with col1:
         </script>
         <script type="text/javascript" src="//www.highperformanceformat.com/72e674d3fcf49ab599755d0eec4f9191/invoke.js"></script>
         """,
-        height=260,   # a bit more than 250px
-        width=310,    # slightly bigger to fit
+        height=270,   # slightly taller
+        width=320,    # enough space
         scrolling=False,
     )
 
 with col2:
-    # Scrollbar Ad
+    st.markdown("### Scrollbar Ad")
     components.html(
         """
         <script type='text/javascript' 
                 src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
         </script>
         """,
-        height=400,   # match height of third ad for alignment
+        height=400,   # enough height for scrolling ad
+        width=600,    # wide enough container
         scrolling=True
     )
 
