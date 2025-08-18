@@ -18,7 +18,6 @@ from gtts import gTTS
 import tempfile
 import time
 import requests
-import streamlit.components.v1 as components
 
 # =========================================================
 # 🔑 Load API Keys from .env
@@ -58,18 +57,6 @@ gemini_client = genai.Client(api_key=gemini_api_key)  # ✅ Gemini Client
 # =========================================================
 st.set_page_config(page_title="AI Tools Suite", page_icon="💬")
 st.title("💬 Chat + 🖼 Image + 🎥 Video + 🏷 Classification AI")
-
-# Inject AdSense Auto Ads script
-components.html(
-    """
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7006477250957433"
-         crossorigin="anonymous"></script>
-    <script>
-         (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-    """,
-    height=0,  # hidden container
-)
 
 # ===================== CUSTOM THEME =====================
 st.markdown(
@@ -159,7 +146,6 @@ with st.sidebar:
         # Clear all tools' session state
         st.session_state.clear()
 
-
 # =========================================================
 # 💬 Chat AI Assistant (Continuous Voice + Autoplay Update)
 # =========================================================
@@ -187,7 +173,9 @@ if app_mode == "Chat AI Assistant":
         enable_code_execution = st.checkbox(
             "⚡ Enable Code Execution for this query", value=False
         )
-        enable_voice_chat = st.checkbox("🎤 Continuous Voice Chat Mode", value=False)
+        enable_voice_chat = st.checkbox(
+            "🎤 Continuous Voice Chat Mode", value=False
+        )
         st.session_state["continuous_voice_chat"] = enable_voice_chat
 
     user_input = None
@@ -199,8 +187,7 @@ if app_mode == "Chat AI Assistant":
             try:
                 # Optional beep sound before listening
                 import sys
-
-                sys.stdout.write("\a")
+                sys.stdout.write('\a')
                 sys.stdout.flush()
 
                 st.info("🎙 Listening... Speak now.")
@@ -235,9 +222,7 @@ if app_mode == "Chat AI Assistant":
                 grounding_tool = types.Tool(google_search=types.GoogleSearch())
                 tools_list = [grounding_tool]
                 if enable_code_execution:
-                    tools_list.append(
-                        types.Tool(code_execution=types.ToolCodeExecution())
-                    )
+                    tools_list.append(types.Tool(code_execution=types.ToolCodeExecution()))
 
                 config = types.GenerateContentConfig(tools=tools_list)
                 combined_prompt = "\n".join(
@@ -251,9 +236,7 @@ if app_mode == "Chat AI Assistant":
 
                 ai_reply_parts = []
                 for part in response.candidates[0].content.parts:
-                    if part.text and not part.text.strip().lower().startswith(
-                        "result:"
-                    ):
+                    if part.text and not part.text.strip().lower().startswith("result:"):
                         ai_reply_parts.append(part.text)
                     if part.executable_code and enable_code_execution:
                         st.code(part.executable_code.code, language="python")
@@ -282,9 +265,7 @@ if app_mode == "Chat AI Assistant":
         if st.session_state["continuous_voice_chat"]:
             try:
                 tts = gTTS(text=ai_reply, lang="en")
-                with tempfile.NamedTemporaryFile(
-                    delete=False, suffix=".mp3"
-                ) as tmp_file:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp_file:
                     tts.save(tmp_file.name)
                     audio_file_path = tmp_file.name
 
@@ -305,6 +286,7 @@ if app_mode == "Chat AI Assistant":
         # 🚀 Automatically listen for next voice input
         if st.session_state["continuous_voice_chat"]:
             st.rerun()
+
 
 
 # =========================================================
@@ -437,3 +419,25 @@ elif app_mode == "Image Classification":
 # =========================================================
 st.markdown("---")
 st.caption("Made with ❤️ by Anit Saha")
+
+# ✅ Insert Adsterra Direct Link Ad
+st.markdown(
+    """
+    <div style="text-align:center; margin-top:20px;">
+        <a href="https://www.profitableratecpm.com/anj0v0tyj?key=810c2a66cc9787bb094ec1fba2ea32fe" 
+           target="_blank" 
+           style="display:inline-block; background:linear-gradient(90deg,#000428,#004e92,#00aaff);
+                  color:white; padding:12px 24px; border-radius:10px; text-decoration:none; font-weight:bold;">
+            🔥 Check This Out 🔥
+        </a>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+# ✅ Scrollbar Ads (Injected Script)
+st.markdown(
+    """
+    <script type='text/javascript' src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'></script>
+    """,
+    unsafe_allow_html=True,
+)
