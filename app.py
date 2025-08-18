@@ -495,14 +495,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ✅ Native Banner Ad (in place of scrollbar ad)
 components.html(
     """
-    <script type='text/javascript'
-      src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
+    <script async="async" data-cfasync="false" 
+        src="//pl27450014.profitableratecpm.com/d4cd9731abd5eab614191a36354ee7bc/invoke.js">
     </script>
+    <div id="container-d4cd9731abd5eab614191a36354ee7bc"></div>
     """,
-    height=0,
-    width=0,
+    height=300,  # Adjust depending on ad size
+    width=800,   # Adjust to fit your layout
     scrolling=False,
 )
 
