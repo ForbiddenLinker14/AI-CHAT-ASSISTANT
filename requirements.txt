@@ -1,9 +1,8 @@
 streamlit
-requests
 python-dotenv
+requests
 huggingface_hub
 Pillow
 google-genai
 SpeechRecognition
 gTTS
-
