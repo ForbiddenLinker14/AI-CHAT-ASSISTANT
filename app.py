@@ -483,6 +483,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ✅ Scrollbar Ad
+st.markdown(
+    """
+    <script type='text/javascript' 
+            src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
+    </script>
+    """,
+    unsafe_allow_html=True,
+)
+
 # =========================================================
 # 📜 Third Banner Ad (468x60)
 # =========================================================
