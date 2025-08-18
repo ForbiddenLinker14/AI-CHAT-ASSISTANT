@@ -166,7 +166,28 @@ components.html(
     height=100,  # enough to fit 90px height
     width=740,   # enough to fit 728px width
     scrolling=False
-)        
+)
+
+# =========================================================
+# 📜 Second Banner Ad (468x60)
+# =========================================================
+components.html(
+    """
+    <script type="text/javascript">
+        atOptions = {
+            'key' : '68d5886f8f1b26a3bfd5b9f21f29b548',
+            'format' : 'iframe',
+            'height' : 60,
+            'width' : 468,
+            'params' : {}
+        };
+    </script>
+    <script type="text/javascript" src="//www.highperformanceformat.com/68d5886f8f1b26a3bfd5b9f21f29b548/invoke.js"></script>
+    """,
+    height=70,   # slightly bigger to fit 60px
+    width=480,   # slightly bigger to fit 468px
+    scrolling=False
+)         
 
 # =========================================================
 # 💬 Chat AI Assistant (Continuous Voice + Autoplay Update)
@@ -461,5 +482,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 
 
