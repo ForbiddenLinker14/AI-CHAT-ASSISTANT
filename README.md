@@ -1,2 +1,3 @@
 # AI-CHAT-ASSISTANT
 It's an AI application that can help answer your complex questions, solve equations, generate and execute your code, and also create images and videos according to the given prompt...
+Check it out - https://ai-tools-suite-a2hi.onrender.com/
