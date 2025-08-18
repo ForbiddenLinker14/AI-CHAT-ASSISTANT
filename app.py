@@ -483,25 +483,13 @@ st.caption("Made with ❤️ by Anit Saha")
 # 📜 Footer + Adsterra Ads
 # =========================================================
 
-# ✅ Direct Link Ad (iframe banner style)
-st.markdown(
-    """
-    <div style="text-align:center; margin-top:20px;">
-        <iframe src="https://www.profitableratecpm.com/anj0v0tyj?key=810c2a66cc9787bb094ec1fba2ea32fe" 
-                width="100%" height="90" frameborder="0" scrolling="no">
-        </iframe>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
-# ✅ Scrollbar Ad (JS works only in components.html)
+# 📜 Scrollbar Ad (auto attaches itself to the page)
 components.html(
     """
-    <script type='text/javascript' src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'></script>
+    <script type="text/javascript" src="https://pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js"></script>
     """,
-    height=300,   # adjust height to fit scrollbar ad
-    scrolling=True
+    height=0,
+    width=0
 )
 
 # =========================================================
