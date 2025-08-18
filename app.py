@@ -516,7 +516,7 @@ with col2:
                 src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
         </script>
         """,
-        height=260,   # match height of third ad for alignment
+        height=400,   # match height of third ad for alignment
         scrolling=True
     )
 
