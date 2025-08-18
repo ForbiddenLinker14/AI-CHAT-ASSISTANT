@@ -483,14 +483,15 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ✅ Scrollbar Ad
-st.markdown(
+# ✅ Scrollbar Ad (JS works only in components.html)
+components.html(
     """
     <script type='text/javascript' 
             src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
     </script>
     """,
-    unsafe_allow_html=True,
+    height=300,   # adjust height to fit scrollbar ad
+    scrolling=True
 )
 
 # =========================================================
@@ -514,36 +515,3 @@ components.html(
     scrolling=False,
 )
 
-# # ✅ Scrollbar Ads (Injected JS safely with components.html)
-# components.html(
-#     """
-#     <script type='text/javascript'
-#         src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
-#     </script>
-#     """,
-#     height=0,  # keeps it hidden, script still runs
-# )
-# # ✅ Extra Direct Link Ad (iframe banner style)
-# st.markdown(
-#     """
-#     <div style="text-align:center; margin-top:20px;">
-#         <iframe src="https://www.profitableratecpm.com/nejb9w4xw?key=474171a0992eb5419784974a369a7871"
-#                 width="100%" height="90" frameborder="0" scrolling="no">
-#         </iframe>
-#     </div>
-#     """,
-#     unsafe_allow_html=True,
-# )
-# # =========================================================
-# # 📜 Inject Popunder Ad (into <head>)
-# # =========================================================
-# components.html(
-#     """
-#     <script type='text/javascript'>
-#         var script = document.createElement("script");
-#         script.src = "//pl27448593.profitableratecpm.com/a5/35/0f/a5350f98f88d27271cdd55daad15e888.js";
-#         document.head.appendChild(script);
-#     </script>
-#     """,
-#     height=0,  # keep container invisible
-# )
