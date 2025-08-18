@@ -483,48 +483,28 @@ st.caption("Made with ❤️ by Anit Saha")
 # 📜 Footer + Adsterra Ads
 # =========================================================
 
-# ✅ Scrollbar / Sticky-bottom Ad (visible & works in Streamlit)
+# ✅ Direct Link Ad (iframe banner style)
 st.markdown(
     """
-    <style>
-      /* give the page bottom padding so the sticky ad doesn't cover content */
-      body { padding-bottom: 110px !important; }
-      #sticky-scrollbar-ad { 
-        position: fixed; 
-        bottom: 0; left: 0; 
-        width: 100%; height: 100px; 
-        z-index: 999999; 
-        background: transparent;
-      }
-      #sticky-scrollbar-ad iframe {
-        width: 100%; height: 100%; border: 0; display: block;
-      }
-      /* optional close button */
-      #close-sticky-ad {
-        position:absolute; right:8px; top:8px; 
-        padding:4px 8px; font-size:12px; 
-        border-radius:6px; border:1px solid #ccc; 
-        cursor:pointer; background:rgba(255,255,255,.85);
-        z-index: 1000000;
-      }
-    </style>
-
-    <div id="sticky-scrollbar-ad">
-      <button id="close-sticky-ad" onclick="document.getElementById('sticky-scrollbar-ad').remove();">✕</button>
-
-      <!-- We load YOUR scrollbar JS inside an inner iframe via srcdoc -->
-      <iframe scrolling="no" frameborder="0"
-        srcdoc="<!doctype html>
-        <html><head><meta charset='utf-8'></head>
-        <body style='margin:0;'>
-          <script type='text/javascript' src='https://pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'></script>
-        </body></html>">
-      </iframe>
+    <div style="text-align:center; margin-top:20px;">
+        <iframe src="https://www.profitableratecpm.com/anj0v0tyj?key=810c2a66cc9787bb094ec1fba2ea32fe" 
+                width="100%" height="90" frameborder="0" scrolling="no">
+        </iframe>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
+components.html(
+    """
+    <script type='text/javascript'
+      src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
+    </script>
+    """,
+    height=0,
+    width=0,
+    scrolling=False,
+)
 
 # =========================================================
 # 📜 Third Banner Ad (468x60)
