@@ -420,24 +420,32 @@ elif app_mode == "Image Classification":
 st.markdown("---")
 st.caption("Made with ❤️ by Anit Saha")
 
-# ✅ Insert Adsterra Direct Link Ad
+# =========================================================
+# 📜 Footer + Adsterra Ads
+# =========================================================
+import streamlit.components.v1 as components
+
+st.markdown("---")
+st.caption("Made with ❤️ by Anit Saha")
+
+# ✅ Direct Link Ad (iframe banner style)
 st.markdown(
     """
     <div style="text-align:center; margin-top:20px;">
-        <a href="https://www.profitableratecpm.com/anj0v0tyj?key=810c2a66cc9787bb094ec1fba2ea32fe" 
-           target="_blank" 
-           style="display:inline-block; background:linear-gradient(90deg,#000428,#004e92,#00aaff);
-                  color:white; padding:12px 24px; border-radius:10px; text-decoration:none; font-weight:bold;">
-            🔥 Check This Out 🔥
-        </a>
+        <iframe src="https://www.profitableratecpm.com/anj0v0tyj?key=810c2a66cc9787bb094ec1fba2ea32fe" 
+                width="100%" height="90" frameborder="0" scrolling="no">
+        </iframe>
     </div>
     """,
     unsafe_allow_html=True,
 )
-# ✅ Scrollbar Ads (Injected Script)
-st.markdown(
+
+# ✅ Scrollbar Ads (Injected JS safely with components.html)
+components.html(
     """
-    <script type='text/javascript' src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'></script>
+    <script type='text/javascript' 
+        src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
+    </script>
     """,
-    unsafe_allow_html=True,
+    height=0,  # keeps it hidden, script still runs
 )
