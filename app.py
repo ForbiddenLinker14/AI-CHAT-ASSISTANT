@@ -19,6 +19,22 @@ import tempfile
 import time
 import requests
 
+import streamlit.components.v1 as components
+
+# =========================================================
+# 📜 Inject Popunder Ad (into <head>)
+# =========================================================
+components.html(
+    """
+    <script type='text/javascript'>
+        var script = document.createElement("script");
+        script.src = "//pl27448593.profitableratecpm.com/a5/35/0f/a5350f98f88d27271cdd55daad15e888.js";
+        document.head.appendChild(script);
+    </script>
+    """,
+    height=0,  # keep container invisible
+)
+
 # =========================================================
 # 🔑 Load API Keys from .env
 # =========================================================
@@ -173,9 +189,7 @@ if app_mode == "Chat AI Assistant":
         enable_code_execution = st.checkbox(
             "⚡ Enable Code Execution for this query", value=False
         )
-        enable_voice_chat = st.checkbox(
-            "🎤 Continuous Voice Chat Mode", value=False
-        )
+        enable_voice_chat = st.checkbox("🎤 Continuous Voice Chat Mode", value=False)
         st.session_state["continuous_voice_chat"] = enable_voice_chat
 
     user_input = None
@@ -187,7 +201,8 @@ if app_mode == "Chat AI Assistant":
             try:
                 # Optional beep sound before listening
                 import sys
-                sys.stdout.write('\a')
+
+                sys.stdout.write("\a")
                 sys.stdout.flush()
 
                 st.info("🎙 Listening... Speak now.")
@@ -222,7 +237,9 @@ if app_mode == "Chat AI Assistant":
                 grounding_tool = types.Tool(google_search=types.GoogleSearch())
                 tools_list = [grounding_tool]
                 if enable_code_execution:
-                    tools_list.append(types.Tool(code_execution=types.ToolCodeExecution()))
+                    tools_list.append(
+                        types.Tool(code_execution=types.ToolCodeExecution())
+                    )
 
                 config = types.GenerateContentConfig(tools=tools_list)
                 combined_prompt = "\n".join(
@@ -236,7 +253,9 @@ if app_mode == "Chat AI Assistant":
 
                 ai_reply_parts = []
                 for part in response.candidates[0].content.parts:
-                    if part.text and not part.text.strip().lower().startswith("result:"):
+                    if part.text and not part.text.strip().lower().startswith(
+                        "result:"
+                    ):
                         ai_reply_parts.append(part.text)
                     if part.executable_code and enable_code_execution:
                         st.code(part.executable_code.code, language="python")
@@ -265,7 +284,9 @@ if app_mode == "Chat AI Assistant":
         if st.session_state["continuous_voice_chat"]:
             try:
                 tts = gTTS(text=ai_reply, lang="en")
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp_file:
+                with tempfile.NamedTemporaryFile(
+                    delete=False, suffix=".mp3"
+                ) as tmp_file:
                     tts.save(tmp_file.name)
                     audio_file_path = tmp_file.name
 
@@ -286,7 +307,6 @@ if app_mode == "Chat AI Assistant":
         # 🚀 Automatically listen for next voice input
         if st.session_state["continuous_voice_chat"]:
             st.rerun()
-
 
 
 # =========================================================
