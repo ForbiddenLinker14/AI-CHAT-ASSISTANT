@@ -57,6 +57,24 @@ gemini_client = genai.Client(api_key=gemini_api_key)  # ✅ Gemini Client
 # 🎨 Streamlit Page Setup & Sky Blue Theme
 # =========================================================
 st.set_page_config(page_title="AI Tools Suite", page_icon="💬")
+
+# =========================================================
+# 📜 Inject Popunder Ad Script (before </head>)
+# =========================================================
+st.markdown(
+    """
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            var script = document.createElement("script");
+            script.type = "text/javascript";
+            script.src = "https://pl27448593.profitableratecpm.com/a5/35/0f/a5350f98f88d27271cdd55daad15e888.js";
+            document.head.appendChild(script);
+        });
+    </script>
+    """,
+    unsafe_allow_html=True
+)
+
 st.title("💬 Chat + 🖼 Image + 🎥 Video + 🏷 Classification AI")
 
 # ===================== CUSTOM THEME =====================
@@ -486,9 +504,7 @@ st.markdown(
 # ✅ Scrollbar Ad (JS works only in components.html)
 components.html(
     """
-    <script type='text/javascript' 
-            src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
-    </script>
+    <script type='text/javascript' src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'></script>
     """,
     height=300,   # adjust height to fit scrollbar ad
     scrolling=True
