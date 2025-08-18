@@ -164,8 +164,8 @@ components.html(
     <script type="text/javascript" src="//www.highperformanceformat.com/ce19aabaaaceb5654105a6dfac8719ec/invoke.js"></script>
     """,
     height=100,  # enough to fit 90px height
-    width=740,   # enough to fit 728px width
-    scrolling=False
+    width=740,  # enough to fit 728px width
+    scrolling=False,
 )
 
 # =========================================================
@@ -184,10 +184,10 @@ components.html(
     </script>
     <script type="text/javascript" src="//www.highperformanceformat.com/68d5886f8f1b26a3bfd5b9f21f29b548/invoke.js"></script>
     """,
-    height=70,   # slightly bigger to fit 60px
-    width=480,   # slightly bigger to fit 468px
-    scrolling=False
-)         
+    height=70,  # slightly bigger to fit 60px
+    width=480,  # slightly bigger to fit 468px
+    scrolling=False,
+)
 
 # =========================================================
 # 💬 Chat AI Assistant (Continuous Voice + Autoplay Update)
@@ -483,5 +483,57 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# =========================================================
+# 📜 Third Banner Ad (468x60)
+# =========================================================
+components.html(
+    """
+    <script type="text/javascript">
+	atOptions = {
+		'key' : '72e674d3fcf49ab599755d0eec4f9191',
+		'format' : 'iframe',
+		'height' : 250,
+		'width' : 300,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//www.highperformanceformat.com/72e674d3fcf49ab599755d0eec4f9191/invoke.js"></script>
+    """,
+    height=260,   # a bit more than 250px
+    width=310,  # slightly bigger to fit 468px
+    scrolling=False,
+)
 
-
+# # ✅ Scrollbar Ads (Injected JS safely with components.html)
+# components.html(
+#     """
+#     <script type='text/javascript'
+#         src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
+#     </script>
+#     """,
+#     height=0,  # keeps it hidden, script still runs
+# )
+# # ✅ Extra Direct Link Ad (iframe banner style)
+# st.markdown(
+#     """
+#     <div style="text-align:center; margin-top:20px;">
+#         <iframe src="https://www.profitableratecpm.com/nejb9w4xw?key=474171a0992eb5419784974a369a7871"
+#                 width="100%" height="90" frameborder="0" scrolling="no">
+#         </iframe>
+#     </div>
+#     """,
+#     unsafe_allow_html=True,
+# )
+# # =========================================================
+# # 📜 Inject Popunder Ad (into <head>)
+# # =========================================================
+# components.html(
+#     """
+#     <script type='text/javascript'>
+#         var script = document.createElement("script");
+#         script.src = "//pl27448593.profitableratecpm.com/a5/35/0f/a5350f98f88d27271cdd55daad15e888.js";
+#         document.head.appendChild(script);
+#     </script>
+#     """,
+#     height=0,  # keep container invisible
+# )
