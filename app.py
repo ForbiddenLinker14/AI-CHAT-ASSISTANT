@@ -3,22 +3,22 @@
 # =========================================================
 import os
 import io
+import time
+import base64
+import tempfile
 import requests
-from dotenv import load_dotenv
 import streamlit as st
+import streamlit.components.v1 as components
+from dotenv import load_dotenv
 from huggingface_hub import InferenceClient
-from PIL import Image
+from PIL import Image  # ✅ For image display & saving
 from google import genai  # ✅ Google Gemini API
 from google.genai import types  # ✅ For Grounding tools
-from io import BytesIO  # ✅ Needed for image byte handling
-from PIL import Image  # ✅ Pillow for image display & saving
-import streamlit as st
-import speech_recognition as sr
-from gtts import gTTS
-import tempfile
-import time
-import requests
-import streamlit.components.v1 as components
+import speech_recognition as sr  # ✅ Speech-to-text
+from gtts import gTTS  # ✅ Text-to-speech
+from io import BytesIO
+from st_audiorec import st_audiorec  # ✅ Browser Mic
+from mutagen.mp3 import MP3
 
 # =========================================================
 # 🔑 Load API Keys from .env
@@ -26,15 +26,10 @@ import streamlit.components.v1 as components
 load_dotenv()
 
 groq_api_key = os.getenv("GROQ_API_KEY")
-hf_token = os.getenv("HF_TOKEN")
 gemini_api_key = os.getenv("GEMINI_API_KEY")  # ✅ Gemini API Key
 
 if not groq_api_key:
     st.error("❌ No GROQ_API_KEY found in .env")
-    st.stop()
-
-if not hf_token:
-    st.error("❌ No HF_TOKEN found in .env")
     st.stop()
 
 if not gemini_api_key:
@@ -44,18 +39,7 @@ if not gemini_api_key:
 # =========================================================
 # 🤖 Initialize Clients
 # =========================================================
-hf_client = InferenceClient(provider="nebius", api_key=hf_token)  # Image Generation
-video_client = InferenceClient(
-    provider="replicate", api_key=hf_token
-)  # Video Generation
-classification_client = InferenceClient(
-    provider="hf-inference", api_key=hf_token
-)  # Image Classification
 gemini_client = genai.Client(api_key=gemini_api_key)  # ✅ Gemini Client
-
-# =========================================================
-# 🎨 Streamlit Page Setup & Sky Blue Theme
-# =========================================================
 
 # =========================================================
 # 📜 Inject Popunder Ad Script
@@ -69,9 +53,11 @@ components.html(
 )
 
 st.set_page_config(page_title="AI Tools Suite", page_icon="💬")
-st.title("💬 Chat + 🖼 Image + 🎥 Video + 🏷 Classification AI")
+st.title("💬 Chat + 🖼 Image + 🎥 Video")
 
-# ===================== CUSTOM THEME =====================
+# =========================================================
+# 🎨 Streamlit Page Setup & Sky Blue Theme
+# =========================================================
 st.markdown(
     """
 <style>
@@ -107,41 +93,30 @@ with st.sidebar:
         (
             "Chat AI Assistant",
             "Text-to-Image Generator",
-            "Text-to-Video Generator",
-            "Image Classification",
+            "Text-to-Video (Veo-3)",
         ),
         key="tool_selector",
     )
 
-    st.header("Chat Settings")
+    st.header("Settings")
 
     if app_mode == "Chat AI Assistant":
         model_options = (
             "llama3-8b-8192",
             "gemini-2.5-flash",
-            "other-model-1",
-            "other-model-2",
         )
         default_model = "llama3-8b-8192"
 
     elif app_mode == "Text-to-Image Generator":
-        model_options = ("gemini-2.5-flash", "other-model-1", "other-model-2")
+        model_options = "gemini-2.5-flash"
         default_model = "gemini-2.5-flash"
 
-    elif app_mode == "Text-to-Video Generator":
-        model_options = ("Wan-AI/Wan2.2-TI2V-5B", "other-model-1", "other-model-2")
-        default_model = "Wan-AI/Wan2.2-TI2V-5B"
-
-    elif app_mode == "Image Classification":
-        model_options = (
-            "Falconsai/nsfw_image_detection",
-            "other-model-1",
-            "other-model-2",
-        )
-        default_model = "Falconsai/nsfw_image_detection"
+    elif app_mode == "Text-to-Video (Veo-3)":
+        model_options = ("veo-3.0-generate-preview",)
+        default_model = "veo-3.0-generate-preview"
 
     chat_model = st.selectbox(
-        "Chat Model:",
+        "Model:",
         model_options,
         index=model_options.index(default_model),
         key="chat_model_selector",
@@ -150,62 +125,60 @@ with st.sidebar:
     st.markdown(
         '<div style="background: linear-gradient(135deg, #000428, #004e92, #00aaff); '
         'padding: 10px; border-radius: 10px; color: #FAFAFA;">'
-        "<strong>System Prompt:</strong> Ask me anything!</div>",
+        "<strong>System Prompt:</strong> Set your instructions here.</div>",
         unsafe_allow_html=True,
     )
 
+    # Clear state button applies globally
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("Clear Chat / Data"):
-        # Clear all tools' session state
         st.session_state.clear()
 
-# =========================================================
-# 📜 Inline Banner Ad (728x90)
-# =========================================================
-components.html(
-    """
-    <script type="text/javascript">
-        atOptions = {
-            'key' : 'ce19aabaaaceb5654105a6dfac8719ec',
-            'format' : 'iframe',
-            'height' : 90,
-            'width' : 728,
-            'params' : {}
-        };
-    </script>
-    <script type="text/javascript" src="//www.highperformanceformat.com/ce19aabaaaceb5654105a6dfac8719ec/invoke.js"></script>
-    """,
-    height=100,  # enough to fit 90px height
-    width=740,  # enough to fit 728px width
-    scrolling=False,
-)
+# # =========================================================
+# # 📜 Inline Banner Ad (728x90)
+# # =========================================================
+# components.html(
+#     """
+#     <script type="text/javascript">
+#         atOptions = {
+#             'key' : 'ce19aabaaaceb5654105a6dfac8719ec',
+#             'format' : 'iframe',
+#             'height' : 90,
+#             'width' : 728,
+#             'params' : {}
+#         };
+#     </script>
+#     <script type="text/javascript" src="//www.highperformanceformat.com/ce19aabaaaceb5654105a6dfac8719ec/invoke.js"></script>
+#     """,
+#     height=100,  # enough to fit 90px height
+#     width=740,  # enough to fit 728px width
+#     scrolling=False,
+# )
+
+# # =========================================================
+# # 📜 Second Banner Ad (468x60)
+# # =========================================================
+# components.html(
+#     """
+#     <script type="text/javascript">
+#         atOptions = {
+#             'key' : '68d5886f8f1b26a3bfd5b9f21f29b548',
+#             'format' : 'iframe',
+#             'height' : 60,
+#             'width' : 468,
+#             'params' : {}
+#         };
+#     </script>
+#     <script type="text/javascript" src="//www.highperformanceformat.com/68d5886f8f1b26a3bfd5b9f21f29b548/invoke.js"></script>
+#     """,
+#     height=70,  # slightly bigger to fit 60px<
+#     width=480,  # slightly bigger to fit 468px
+#     scrolling=False,
+# )
 
 # =========================================================
-# 📜 Second Banner Ad (468x60)
+# 💬 Chat AI Assistant (Continuous Voice + Browser Mic + Autoplay)
 # =========================================================
-components.html(
-    """
-    <script type="text/javascript">
-        atOptions = {
-            'key' : '68d5886f8f1b26a3bfd5b9f21f29b548',
-            'format' : 'iframe',
-            'height' : 60,
-            'width' : 468,
-            'params' : {}
-        };
-    </script>
-    <script type="text/javascript" src="//www.highperformanceformat.com/68d5886f8f1b26a3bfd5b9f21f29b548/invoke.js"></script>
-    """,
-    height=70,  # slightly bigger to fit 60px
-    width=480,  # slightly bigger to fit 468px
-    scrolling=False,
-)
-
-# =========================================================
-# 💬 Chat AI Assistant (Continuous Voice + Autoplay Update)
-# =========================================================
-import base64  # Make sure this is at the top of your script
-
 if app_mode == "Chat AI Assistant":
     st.subheader("💬 Chat AI Assistant")
 
@@ -214,6 +187,16 @@ if app_mode == "Chat AI Assistant":
         st.session_state["messages"] = []
     if "continuous_voice_chat" not in st.session_state:
         st.session_state["continuous_voice_chat"] = False
+    if "last_user_input" not in st.session_state:
+        st.session_state["last_user_input"] = None
+    if "processed_input" not in st.session_state:
+        st.session_state["processed_input"] = None
+    if "tts_duration" not in st.session_state:
+        st.session_state["tts_duration"] = 3  # default fallback
+    if "mic_enabled" not in st.session_state:
+        st.session_state["mic_enabled"] = True
+    if "auto_restart" not in st.session_state:
+        st.session_state["auto_restart"] = False
 
     # Display chat history
     for msg in st.session_state["messages"]:
@@ -223,51 +206,62 @@ if app_mode == "Chat AI Assistant":
     enable_code_execution = False
     enable_voice_chat = False
 
-    # Model-specific options
     if chat_model == "gemini-2.5-flash":
-        enable_code_execution = st.checkbox(
-            "⚡ Enable Code Execution for this query", value=False
-        )
+        enable_code_execution = st.checkbox("⚡ Enable Code Execution", value=False)
         enable_voice_chat = st.checkbox("🎤 Continuous Voice Chat Mode", value=False)
         st.session_state["continuous_voice_chat"] = enable_voice_chat
 
     user_input = None
+    ai_reply = None
 
-    # 🎤 Continuous voice input loop
-    if st.session_state["continuous_voice_chat"]:
-        recognizer = sr.Recognizer()
-        with sr.Microphone() as source:
+    # =========================================================
+    # 🎤 Continuous voice input
+    # =========================================================
+    mic_slot = st.empty()
+    wav_audio_data = None
+
+    if st.session_state["continuous_voice_chat"] and st.session_state["mic_enabled"]:
+        with mic_slot.container():
+            st.info("🎙 Speak into your browser mic... (auto mode)")
+            wav_audio_data = st_audiorec()
+
+        if wav_audio_data is not None:
+            recognizer = sr.Recognizer()
+            audio = sr.AudioFile(BytesIO(wav_audio_data))
+            with audio as source:
+                audio_content = recognizer.record(source)
             try:
-                # Optional beep sound before listening
-                import sys
+                user_input = recognizer.recognize_google(audio_content)
 
-                sys.stdout.write("\a")
-                sys.stdout.flush()
+                # Save recognized text
+                st.session_state["last_user_input"] = user_input
 
-                st.info("🎙 Listening... Speak now.")
-                audio_data = recognizer.listen(source)
-                user_input = recognizer.recognize_google(audio_data)
-                st.success(f"🗣 You said: {user_input}")
+                # ❌ DO NOT RERUN HERE
 
             except sr.UnknownValueError:
                 st.warning("❌ Could not understand, please try again.")
-                st.rerun()  # Retry listening immediately
-
             except sr.RequestError as e:
                 st.error(f"❌ Speech recognition error: {e}")
-                st.rerun()  # Retry listening immediately
 
-    # 📝 Text input fallback when voice mode is off
+    # 📝 Text input fallback
     if not st.session_state["continuous_voice_chat"]:
         user_input = st.chat_input("Type your message...")
 
-    if user_input:
+    # =========================================================
+    # 🚀 Process input ONCE ONLY
+    # =========================================================
+    if (
+        st.session_state["last_user_input"]
+        and st.session_state["last_user_input"] != st.session_state["processed_input"]
+    ):
+        user_input = st.session_state["last_user_input"]
+
         # Add user message
         st.session_state["messages"].append({"role": "user", "content": user_input})
         with st.chat_message("user"):
             st.markdown(user_input)
 
-        # Prepare messages for model
+        # Prepare message history
         messages = [{"role": "system", "content": "Ask me anything!"}]
         messages.extend(st.session_state["messages"])
 
@@ -276,25 +270,17 @@ if app_mode == "Chat AI Assistant":
                 grounding_tool = types.Tool(google_search=types.GoogleSearch())
                 tools_list = [grounding_tool]
                 if enable_code_execution:
-                    tools_list.append(
-                        types.Tool(code_execution=types.ToolCodeExecution())
-                    )
+                    tools_list.append(types.Tool(code_execution=types.ToolCodeExecution()))
 
                 config = types.GenerateContentConfig(tools=tools_list)
-                combined_prompt = "\n".join(
-                    [f"{m['role']}: {m['content']}" for m in messages]
-                )
+                combined_prompt = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
 
-                chat_session = gemini_client.chats.create(
-                    model="gemini-2.5-flash", config=config
-                )
+                chat_session = gemini_client.chats.create(model="gemini-2.5-flash", config=config)
                 response = chat_session.send_message(combined_prompt)
 
                 ai_reply_parts = []
                 for part in response.candidates[0].content.parts:
-                    if part.text and not part.text.strip().lower().startswith(
-                        "result:"
-                    ):
+                    if part.text and not part.text.strip().lower().startswith("result:"):
                         ai_reply_parts.append(part.text)
                     if part.executable_code and enable_code_execution:
                         st.code(part.executable_code.code, language="python")
@@ -310,43 +296,70 @@ if app_mode == "Chat AI Assistant":
                     },
                     json={"model": chat_model, "messages": messages},
                 )
-                ai_reply = response.json()["choices"][0]["message"]["content"]
+                data = response.json()
+                if "choices" in data:
+                    ai_reply = data["choices"][0]["message"]["content"]
+                elif "error" in data:
+                    ai_reply = f"❌ API Error: {data['error'].get('message', 'Unknown error')}"
+                else:
+                    ai_reply = f"❌ Unexpected response: {data}"
 
         except Exception as e:
             ai_reply = f"Error: {e}"
 
-        # Display AI reply
-        with st.chat_message("assistant"):
-            st.markdown(ai_reply)
+        # ✅ Display AI reply
+        if ai_reply:
+            with st.chat_message("assistant"):
+                st.markdown(ai_reply)
 
-        # 🔊 Voice output in continuous mode with autoplay
-        if st.session_state["continuous_voice_chat"]:
-            try:
-                tts = gTTS(text=ai_reply, lang="en")
-                with tempfile.NamedTemporaryFile(
-                    delete=False, suffix=".mp3"
-                ) as tmp_file:
-                    tts.save(tmp_file.name)
-                    audio_file_path = tmp_file.name
+            # 🔊 Voice playback
+            if st.session_state["continuous_voice_chat"]:
+                try:
+                    # Disable mic while playing TTS
+                    st.session_state["mic_enabled"] = False
+                    mic_slot.empty()
 
-                # Autoplay audio in browser using HTML
-                audio_html = f"""
-                <audio autoplay>
-                    <source src="data:audio/mp3;base64,{base64.b64encode(open(audio_file_path, 'rb').read()).decode()}" type="audio/mp3">
-                </audio>
-                """
-                st.markdown(audio_html, unsafe_allow_html=True)
+                    tts = gTTS(text=ai_reply, lang="en")
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp_file:
+                        tts.save(tmp_file.name)
+                        audio_file_path = tmp_file.name
 
-            except Exception as e:
-                st.error(f"❌ Voice output error: {e}")
+                    # Detect duration
+                    audio_info = MP3(audio_file_path)
+                    st.session_state["tts_duration"] = audio_info.info.length
 
-        # Save AI message
-        st.session_state["messages"].append({"role": "assistant", "content": ai_reply})
+                    # Autoplay
+                    audio_html = f"""
+                    <audio autoplay>
+                        <source src="data:audio/mp3;base64,{base64.b64encode(open(audio_file_path, 'rb').read()).decode()}" type="audio/mp3">
+                    </audio>
+                    """
+                    st.markdown(audio_html, unsafe_allow_html=True)
 
-        # 🚀 Automatically listen for next voice input
-        if st.session_state["continuous_voice_chat"]:
-            st.rerun()
+                    # Mark for auto restart after TTS
+                    st.session_state["auto_restart"] = True
 
+                except Exception as e:
+                    st.error(f"❌ Voice output error: {e}")
+
+            # Save AI message
+            st.session_state["messages"].append({"role": "assistant", "content": ai_reply})
+
+            # ✅ mark input as processed
+            st.session_state["processed_input"] = user_input
+
+# =========================================================
+# 🔁 Auto re-arm mic after TTS
+# =========================================================
+if st.session_state.get("auto_restart", False):
+    st.session_state["auto_restart"] = False
+    tts_duration = st.session_state.get("tts_duration", 3)
+
+    time.sleep(tts_duration + 0.25)
+
+    # Re-enable mic and rerun
+    st.session_state["mic_enabled"] = True
+    st.rerun()
 
 # =========================================================
 # 🖼 Text-to-Image Generator (Gemini - 4K Request)
@@ -422,56 +435,59 @@ elif app_mode == "Text-to-Image Generator":
         )
 
 # =========================================================
-# 🎥 Text-to-Video Generator
+# 🎥 Text-to-Video (Veo-3 Gemini)
 # =========================================================
-elif app_mode == "Text-to-Video Generator":
-    st.subheader("🎥 Text-to-Video Generator")
-    video_prompt = st.text_input(
+elif app_mode == "Text-to-Video (Veo-3)":
+    st.subheader("🎥 Text-to-Video (Veo-3 Gemini)")
+
+    video_prompt = st.text_area(
         "Enter video description:",
-        placeholder="e.g., A young man walking on the street",
+        placeholder="e.g., A close-up of two people staring at a cryptic drawing on a wall...",
     )
+
+    # Add system prompt influence
+    system_prompt = "System Prompt: " + "Generate cinematic and realistic short video."
+
     if st.button("Generate Video"):
         if not video_prompt.strip():
             st.warning("Please enter a prompt for video generation.")
         else:
-            with st.spinner("Generating video... (this may take 30-60 seconds)"):
+            with st.spinner("⏳ Generating video... this may take a while"):
                 try:
-                    video_data = video_client.text_to_video(
-                        prompt=video_prompt, model="Wan-AI/Wan2.2-TI2V-5B"
+                    import time
+
+                    client = genai.Client(api_key=gemini_api_key)
+
+                    full_prompt = system_prompt + "\n\nUser Prompt: " + video_prompt
+
+                    operation = client.models.generate_videos(
+                        model=chat_model,
+                        prompt=full_prompt,
                     )
-                    video_bytes = io.BytesIO(video_data)
-                    st.session_state["generated_video"] = video_bytes
+
+                    # Poll until done
+                    while not operation.done:
+                        st.info("Waiting for video generation to complete...")
+                        time.sleep(10)
+                        operation = client.operations.get(operation)
+
+                    # Get video
+                    generated_video = operation.response.generated_videos[0]
+                    file_obj = client.files.download(file=generated_video.video)
+
+                    # Save video to BytesIO for Streamlit
+                    video_bytes = BytesIO(file_obj.read())
+                    st.video(video_bytes)
+
+                    # Download button
+                    st.download_button(
+                        label="📥 Download Veo-3 Video",
+                        data=video_bytes,
+                        file_name="veo3_generated_video.mp4",
+                        mime="video/mp4",
+                    )
                 except Exception as e:
                     st.error(f"Video generation failed: {e}")
-    if "generated_video" in st.session_state:
-        st.video(st.session_state["generated_video"])
-        st.download_button(
-            label="📥 Download Video",
-            data=st.session_state["generated_video"],
-            file_name="generated_video.mp4",
-            mime="video/mp4",
-        )
-
-# =========================================================
-# 🏷 Image Classification
-# =========================================================
-elif app_mode == "Image Classification":
-    st.subheader("🏷 Image Classification")
-    uploaded_image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
-    if uploaded_image:
-        image = Image.open(uploaded_image)
-        st.image(image, caption="Uploaded Image", use_container_width=True)
-        if st.button("Classify Image"):
-            with st.spinner("Classifying image..."):
-                try:
-                    result = classification_client.image_classification(
-                        uploaded_image.read(), model="Falconsai/nsfw_image_detection"
-                    )
-                    st.success("✅ Classification Complete")
-                    for item in result:
-                        st.write(f"**{item['label']}**: {item['score']:.4f}")
-                except Exception as e:
-                    st.error(f"Image classification failed: {e}")
 
 # =========================================================
 # 📜 Footer
@@ -483,62 +499,62 @@ st.caption("Made with ❤️ by Anit Saha")
 # 📜 Footer + Adsterra Ads
 # =========================================================
 
-# ✅ Direct Link Ad (iframe banner style)
-st.markdown(
-    """
-    <div style="text-align:center; margin-top:20px;">
-        <iframe src="https://www.profitableratecpm.com/anj0v0tyj?key=810c2a66cc9787bb094ec1fba2ea32fe" 
-                width="100%" height="90" frameborder="0" scrolling="no">
-        </iframe>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+# # ✅ Direct Link Ad (iframe banner style)
+# st.markdown(
+#     """
+#     <div style="text-align:center; margin-top:20px;">
+#         <iframe src="https://www.profitableratecpm.com/anj0v0tyj?key=810c2a66cc9787bb094ec1fba2ea32fe" 
+#                 width="100%" height="90" frameborder="0" scrolling="no">
+#         </iframe>
+#     </div>
+#     """,
+#     unsafe_allow_html=True,
+# )
 
-# ✅ Native Banner Ad (in place of scrollbar ad)
-components.html(
-    """
-    <script async="async" data-cfasync="false" 
-        src="//pl27450014.profitableratecpm.com/d4cd9731abd5eab614191a36354ee7bc/invoke.js">
-    </script>
-    <div id="container-d4cd9731abd5eab614191a36354ee7bc"></div>
-    """,
-    height=300,  # Adjust depending on ad size
-    width=800,  # Adjust to fit your layout
-    scrolling=False,
-)
+# # ✅ Native Banner Ad (in place of scrollbar ad)
+# components.html(
+#     """
+#     <script async="async" data-cfasync="false" 
+#         src="//pl27450014.profitableratecpm.com/d4cd9731abd5eab614191a36354ee7bc/invoke.js">
+#     </script>
+#     <div id="container-d4cd9731abd5eab614191a36354ee7bc"></div>
+#     """,
+#     height=300,  # Adjust depending on ad size
+#     width=800,  # Adjust to fit your layout
+#     scrolling=False,
+# )
 
-components.html(
-    """
-    <script type='text/javascript'
-      src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
-    </script>
-    """,
-    height=0,
-    width=0,
-    scrolling=False,
-)
+# components.html(
+#     """
+#     <script type='text/javascript'
+#       src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
+#     </script>
+#     """,
+#     height=0,
+#     width=0,
+#     scrolling=False,
+# )
 
-# =========================================================
-# 📜 Third Banner Ad (468x60)
-# =========================================================
-components.html(
-    """
-    <script type="text/javascript">
-	atOptions = {
-		'key' : '72e674d3fcf49ab599755d0eec4f9191',
-		'format' : 'iframe',
-		'height' : 250,
-		'width' : 300,
-		'params' : {}
-	};
-</script>
-<script type="text/javascript" src="//www.highperformanceformat.com/72e674d3fcf49ab599755d0eec4f9191/invoke.js"></script>
-    """,
-    height=260,  # a bit more than 250px
-    width=310,  # slightly bigger to fit 468px
-    scrolling=False,
-)
+# # =========================================================
+# # 📜 Third Banner Ad (468x60)
+# # =========================================================
+# components.html(
+#     """
+#     <script type="text/javascript">
+# 	atOptions = {
+# 		'key' : '72e674d3fcf49ab599755d0eec4f9191',
+# 		'format' : 'iframe',
+# 		'height' : 250,
+# 		'width' : 300,
+# 		'params' : {}
+# 	};
+# </script>
+# <script type="text/javascript" src="//www.highperformanceformat.com/72e674d3fcf49ab599755d0eec4f9191/invoke.js"></script>
+#     """,
+#     height=260,  # a bit more than 250px
+#     width=310,  # slightly bigger to fit 468px
+#     scrolling=False,
+# )
 
 # # ✅ Scrollbar Ads (Injected JS safely with components.html)
 # components.html(
