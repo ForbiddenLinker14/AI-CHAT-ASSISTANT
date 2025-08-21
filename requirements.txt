@@ -7,4 +7,4 @@ google-genai
 SpeechRecognition
 gTTS
 mutagen
-st-audiorec
+# st-audiorec must be installed via GitHub
