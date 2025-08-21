@@ -1,11 +1,11 @@
 services:
   - type: web
-    name: ai-tools-suite
-    env: python
-    plan: free
-    buildCommand: pip install -r requirements.txt
+    name: ai-tools-suite          # Your app’s name → URL will be ai-tools-suite.onrender.com
+    env: python                   # Python environment
+    plan: free                    # Free Render plan
+    buildCommand: pip install -r requirements.txt   # Install dependencies
     startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
-    envVars:
+    envVars:                      # Secure environment variables (API keys, tokens)
       - key: GROQ_API_KEY
         sync: false
       - key: HF_TOKEN
