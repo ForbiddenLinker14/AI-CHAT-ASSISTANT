@@ -6,4 +6,5 @@ Pillow
 google-genai
 SpeechRecognition
 gTTS
-st-audiorec
+git+https://github.com/stefanrmmr/streamlit_audio_recorder
+
