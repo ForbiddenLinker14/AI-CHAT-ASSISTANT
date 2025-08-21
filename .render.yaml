@@ -8,7 +8,5 @@ services:
     envVars:                      # Secure environment variables (API keys, tokens)
       - key: GROQ_API_KEY
         sync: false
-      - key: HF_TOKEN
-        sync: false
       - key: GEMINI_API_KEY
         sync: false
