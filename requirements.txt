@@ -7,6 +7,6 @@ google-genai
 SpeechRecognition
 gTTS
 mutagen
-git+https://github.com/stefanrmmr/streamlit_audio_recorder
-st-audiorec
+streamlit-webrtc
+
 
