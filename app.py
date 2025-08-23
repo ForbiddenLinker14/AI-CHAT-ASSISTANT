@@ -3,22 +3,22 @@
 # =========================================================
 import os
 import io
-import time
-import base64
-import tempfile
 import requests
-import streamlit as st
-import streamlit.components.v1 as components
 from dotenv import load_dotenv
+import streamlit as st
 from huggingface_hub import InferenceClient
-from PIL import Image  # ✅ For image display & saving
+from PIL import Image
 from google import genai  # ✅ Google Gemini API
 from google.genai import types  # ✅ For Grounding tools
-import speech_recognition as sr  # ✅ Speech-to-text
-from gtts import gTTS  # ✅ Text-to-speech
-from io import BytesIO
-from st_audiorec import st_audiorec  # ✅ Browser Mic
-from mutagen.mp3 import MP3
+from io import BytesIO  # ✅ Needed for image byte handling
+from PIL import Image  # ✅ Pillow for image display & saving
+import streamlit as st
+import speech_recognition as sr
+from gtts import gTTS
+import tempfile
+import time
+import requests
+import streamlit.components.v1 as components
 
 # =========================================================
 # 🔑 Load API Keys from .env
@@ -108,7 +108,7 @@ with st.sidebar:
         default_model = "llama3-8b-8192"
 
     elif app_mode == "Text-to-Image Generator":
-        model_options = "gemini-2.5-flash"
+        model_options = ("gemini-2.5-flash")
         default_model = "gemini-2.5-flash"
 
     elif app_mode == "Text-to-Video (Veo-3)":
@@ -134,51 +134,53 @@ with st.sidebar:
     if st.button("Clear Chat / Data"):
         st.session_state.clear()
 
-# # =========================================================
-# # 📜 Inline Banner Ad (728x90)
-# # =========================================================
-# components.html(
-#     """
-#     <script type="text/javascript">
-#         atOptions = {
-#             'key' : 'ce19aabaaaceb5654105a6dfac8719ec',
-#             'format' : 'iframe',
-#             'height' : 90,
-#             'width' : 728,
-#             'params' : {}
-#         };
-#     </script>
-#     <script type="text/javascript" src="//www.highperformanceformat.com/ce19aabaaaceb5654105a6dfac8719ec/invoke.js"></script>
-#     """,
-#     height=100,  # enough to fit 90px height
-#     width=740,  # enough to fit 728px width
-#     scrolling=False,
-# )
-
-# # =========================================================
-# # 📜 Second Banner Ad (468x60)
-# # =========================================================
-# components.html(
-#     """
-#     <script type="text/javascript">
-#         atOptions = {
-#             'key' : '68d5886f8f1b26a3bfd5b9f21f29b548',
-#             'format' : 'iframe',
-#             'height' : 60,
-#             'width' : 468,
-#             'params' : {}
-#         };
-#     </script>
-#     <script type="text/javascript" src="//www.highperformanceformat.com/68d5886f8f1b26a3bfd5b9f21f29b548/invoke.js"></script>
-#     """,
-#     height=70,  # slightly bigger to fit 60px<
-#     width=480,  # slightly bigger to fit 468px
-#     scrolling=False,
-# )
+# =========================================================
+# 📜 Inline Banner Ad (728x90)
+# =========================================================
+components.html(
+    """
+    <script type="text/javascript">
+        atOptions = {
+            'key' : 'ce19aabaaaceb5654105a6dfac8719ec',
+            'format' : 'iframe',
+            'height' : 90,
+            'width' : 728,
+            'params' : {}
+        };
+    </script>
+    <script type="text/javascript" src="//www.highperformanceformat.com/ce19aabaaaceb5654105a6dfac8719ec/invoke.js"></script>
+    """,
+    height=100,  # enough to fit 90px height
+    width=740,  # enough to fit 728px width
+    scrolling=False,
+)
 
 # =========================================================
-# 💬 Chat AI Assistant (Continuous Voice + Browser Mic + Autoplay)
+# 📜 Second Banner Ad (468x60)
 # =========================================================
+components.html(
+    """
+    <script type="text/javascript">
+        atOptions = {
+            'key' : '68d5886f8f1b26a3bfd5b9f21f29b548',
+            'format' : 'iframe',
+            'height' : 60,
+            'width' : 468,
+            'params' : {}
+        };
+    </script>
+    <script type="text/javascript" src="//www.highperformanceformat.com/68d5886f8f1b26a3bfd5b9f21f29b548/invoke.js"></script>
+    """,
+    height=70,  # slightly bigger to fit 60px
+    width=480,  # slightly bigger to fit 468px
+    scrolling=False,
+)
+
+# =========================================================
+# 💬 Chat AI Assistant (Continuous Voice + Autoplay Update)
+# =========================================================
+import base64  # Make sure this is at the top of your script
+
 if app_mode == "Chat AI Assistant":
     st.subheader("💬 Chat AI Assistant")
 
@@ -187,16 +189,6 @@ if app_mode == "Chat AI Assistant":
         st.session_state["messages"] = []
     if "continuous_voice_chat" not in st.session_state:
         st.session_state["continuous_voice_chat"] = False
-    if "last_user_input" not in st.session_state:
-        st.session_state["last_user_input"] = None
-    if "processed_input" not in st.session_state:
-        st.session_state["processed_input"] = None
-    if "tts_duration" not in st.session_state:
-        st.session_state["tts_duration"] = 3  # default fallback
-    if "mic_enabled" not in st.session_state:
-        st.session_state["mic_enabled"] = True
-    if "auto_restart" not in st.session_state:
-        st.session_state["auto_restart"] = False
 
     # Display chat history
     for msg in st.session_state["messages"]:
@@ -206,62 +198,50 @@ if app_mode == "Chat AI Assistant":
     enable_code_execution = False
     enable_voice_chat = False
 
+    # Model-specific options
     if chat_model == "gemini-2.5-flash":
-        enable_code_execution = st.checkbox("⚡ Enable Code Execution", value=False)
+        enable_code_execution = st.checkbox(
+            "⚡ Enable Code Execution for this query", value=False
+        )
         enable_voice_chat = st.checkbox("🎤 Continuous Voice Chat Mode", value=False)
         st.session_state["continuous_voice_chat"] = enable_voice_chat
 
     user_input = None
-    ai_reply = None
 
-    # =========================================================
-    # 🎤 Continuous voice input
-    # =========================================================
-    mic_slot = st.empty()
-    wav_audio_data = None
-
-    if st.session_state["continuous_voice_chat"] and st.session_state["mic_enabled"]:
-        with mic_slot.container():
-            st.info("🎙 Speak into your browser mic... (auto mode)")
-            wav_audio_data = st_audiorec()
-
-        if wav_audio_data is not None:
-            recognizer = sr.Recognizer()
-            audio = sr.AudioFile(BytesIO(wav_audio_data))
-            with audio as source:
-                audio_content = recognizer.record(source)
+    # 🎤 Continuous voice input loop
+    if st.session_state["continuous_voice_chat"]:
+        recognizer = sr.Recognizer()
+        with sr.Microphone() as source:
             try:
-                user_input = recognizer.recognize_google(audio_content)
+                # Optional beep sound before listening
+                import sys
+                sys.stdout.write("\a")
+                sys.stdout.flush()
 
-                # Save recognized text
-                st.session_state["last_user_input"] = user_input
-
-                # ❌ DO NOT RERUN HERE
+                st.info("🎙 Listening... Speak now.")
+                audio_data = recognizer.listen(source)
+                user_input = recognizer.recognize_google(audio_data)
+                st.success(f"🗣 You said: {user_input}")
 
             except sr.UnknownValueError:
                 st.warning("❌ Could not understand, please try again.")
+                st.rerun()  # Retry listening immediately
+
             except sr.RequestError as e:
                 st.error(f"❌ Speech recognition error: {e}")
+                st.rerun()  # Retry listening immediately
 
-    # 📝 Text input fallback
+    # 📝 Text input fallback when voice mode is off
     if not st.session_state["continuous_voice_chat"]:
         user_input = st.chat_input("Type your message...")
 
-    # =========================================================
-    # 🚀 Process input ONCE ONLY
-    # =========================================================
-    if (
-        st.session_state["last_user_input"]
-        and st.session_state["last_user_input"] != st.session_state["processed_input"]
-    ):
-        user_input = st.session_state["last_user_input"]
-
+    if user_input:
         # Add user message
         st.session_state["messages"].append({"role": "user", "content": user_input})
         with st.chat_message("user"):
             st.markdown(user_input)
 
-        # Prepare message history
+        # Prepare messages for model
         messages = [{"role": "system", "content": "Ask me anything!"}]
         messages.extend(st.session_state["messages"])
 
@@ -270,12 +250,18 @@ if app_mode == "Chat AI Assistant":
                 grounding_tool = types.Tool(google_search=types.GoogleSearch())
                 tools_list = [grounding_tool]
                 if enable_code_execution:
-                    tools_list.append(types.Tool(code_execution=types.ToolCodeExecution()))
+                    tools_list.append(
+                        types.Tool(code_execution=types.ToolCodeExecution())
+                    )
 
                 config = types.GenerateContentConfig(tools=tools_list)
-                combined_prompt = "\n".join([f"{m['role']}: {m['content']}" for m in messages])
+                combined_prompt = "\n".join(
+                    [f"{m['role']}: {m['content']}" for m in messages]
+                )
 
-                chat_session = gemini_client.chats.create(model="gemini-2.5-flash", config=config)
+                chat_session = gemini_client.chats.create(
+                    model="gemini-2.5-flash", config=config
+                )
                 response = chat_session.send_message(combined_prompt)
 
                 ai_reply_parts = []
@@ -296,6 +282,7 @@ if app_mode == "Chat AI Assistant":
                     },
                     json={"model": chat_model, "messages": messages},
                 )
+
                 data = response.json()
                 if "choices" in data:
                     ai_reply = data["choices"][0]["message"]["content"]
@@ -307,59 +294,35 @@ if app_mode == "Chat AI Assistant":
         except Exception as e:
             ai_reply = f"Error: {e}"
 
-        # ✅ Display AI reply
-        if ai_reply:
-            with st.chat_message("assistant"):
-                st.markdown(ai_reply)
+        # Display AI reply
+        with st.chat_message("assistant"):
+            st.markdown(ai_reply)
 
-            # 🔊 Voice playback
-            if st.session_state["continuous_voice_chat"]:
-                try:
-                    # Disable mic while playing TTS
-                    st.session_state["mic_enabled"] = False
-                    mic_slot.empty()
+        # 🔊 Voice output in continuous mode with autoplay
+        if st.session_state["continuous_voice_chat"]:
+            try:
+                tts = gTTS(text=ai_reply, lang="en")
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp_file:
+                    tts.save(tmp_file.name)
+                    audio_file_path = tmp_file.name
 
-                    tts = gTTS(text=ai_reply, lang="en")
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp_file:
-                        tts.save(tmp_file.name)
-                        audio_file_path = tmp_file.name
+                # Autoplay audio in browser using HTML
+                audio_html = f"""
+                <audio autoplay>
+                    <source src="data:audio/mp3;base64,{base64.b64encode(open(audio_file_path, 'rb').read()).decode()}" type="audio/mp3">
+                </audio>
+                """
+                st.markdown(audio_html, unsafe_allow_html=True)
 
-                    # Detect duration
-                    audio_info = MP3(audio_file_path)
-                    st.session_state["tts_duration"] = audio_info.info.length
+            except Exception as e:
+                st.error(f"❌ Voice output error: {e}")
 
-                    # Autoplay
-                    audio_html = f"""
-                    <audio autoplay>
-                        <source src="data:audio/mp3;base64,{base64.b64encode(open(audio_file_path, 'rb').read()).decode()}" type="audio/mp3">
-                    </audio>
-                    """
-                    st.markdown(audio_html, unsafe_allow_html=True)
+        # Save AI message
+        st.session_state["messages"].append({"role": "assistant", "content": ai_reply})
 
-                    # Mark for auto restart after TTS
-                    st.session_state["auto_restart"] = True
-
-                except Exception as e:
-                    st.error(f"❌ Voice output error: {e}")
-
-            # Save AI message
-            st.session_state["messages"].append({"role": "assistant", "content": ai_reply})
-
-            # ✅ mark input as processed
-            st.session_state["processed_input"] = user_input
-
-# =========================================================
-# 🔁 Auto re-arm mic after TTS
-# =========================================================
-if st.session_state.get("auto_restart", False):
-    st.session_state["auto_restart"] = False
-    tts_duration = st.session_state.get("tts_duration", 3)
-
-    time.sleep(tts_duration + 0.25)
-
-    # Re-enable mic and rerun
-    st.session_state["mic_enabled"] = True
-    st.rerun()
+        # 🚀 Automatically listen for next voice input
+        if st.session_state["continuous_voice_chat"]:
+            st.rerun()
 
 # =========================================================
 # 🖼 Text-to-Image Generator (Gemini - 4K Request)
@@ -455,7 +418,6 @@ elif app_mode == "Text-to-Video (Veo-3)":
             with st.spinner("⏳ Generating video... this may take a while"):
                 try:
                     import time
-
                     client = genai.Client(api_key=gemini_api_key)
 
                     full_prompt = system_prompt + "\n\nUser Prompt: " + video_prompt
@@ -495,76 +457,76 @@ elif app_mode == "Text-to-Video (Veo-3)":
 st.markdown("---")
 st.caption("Made with ❤️ by Anit Saha")
 
-# =========================================================
-# 📜 Footer + Adsterra Ads
-# =========================================================
-
-# # ✅ Direct Link Ad (iframe banner style)
-# st.markdown(
-#     """
-#     <div style="text-align:center; margin-top:20px;">
-#         <iframe src="https://www.profitableratecpm.com/anj0v0tyj?key=810c2a66cc9787bb094ec1fba2ea32fe" 
-#                 width="100%" height="90" frameborder="0" scrolling="no">
-#         </iframe>
-#     </div>
-#     """,
-#     unsafe_allow_html=True,
-# )
-
-# # ✅ Native Banner Ad (in place of scrollbar ad)
-# components.html(
-#     """
-#     <script async="async" data-cfasync="false" 
-#         src="//pl27450014.profitableratecpm.com/d4cd9731abd5eab614191a36354ee7bc/invoke.js">
-#     </script>
-#     <div id="container-d4cd9731abd5eab614191a36354ee7bc"></div>
-#     """,
-#     height=300,  # Adjust depending on ad size
-#     width=800,  # Adjust to fit your layout
-#     scrolling=False,
-# )
-
-# components.html(
-#     """
-#     <script type='text/javascript'
-#       src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
-#     </script>
-#     """,
-#     height=0,
-#     width=0,
-#     scrolling=False,
-# )
-
 # # =========================================================
-# # 📜 Third Banner Ad (468x60)
+# # 📜 Footer + Adsterra Ads
 # # =========================================================
-# components.html(
-#     """
-#     <script type="text/javascript">
-# 	atOptions = {
-# 		'key' : '72e674d3fcf49ab599755d0eec4f9191',
-# 		'format' : 'iframe',
-# 		'height' : 250,
-# 		'width' : 300,
-# 		'params' : {}
-# 	};
-# </script>
-# <script type="text/javascript" src="//www.highperformanceformat.com/72e674d3fcf49ab599755d0eec4f9191/invoke.js"></script>
-#     """,
-#     height=260,  # a bit more than 250px
-#     width=310,  # slightly bigger to fit 468px
-#     scrolling=False,
-# )
 
-# # ✅ Scrollbar Ads (Injected JS safely with components.html)
-# components.html(
-#     """
-#     <script type='text/javascript'
-#         src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
-#     </script>
-#     """,
-#     height=0,  # keeps it hidden, script still runs
-# )
+# ✅ Direct Link Ad (iframe banner style)
+st.markdown(
+    """
+    <div style="text-align:center; margin-top:20px;">
+        <iframe src="https://www.profitableratecpm.com/anj0v0tyj?key=810c2a66cc9787bb094ec1fba2ea32fe" 
+                width="100%" height="90" frameborder="0" scrolling="no">
+        </iframe>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+# ✅ Native Banner Ad (in place of scrollbar ad)
+components.html(
+    """
+    <script async="async" data-cfasync="false" 
+        src="//pl27450014.profitableratecpm.com/d4cd9731abd5eab614191a36354ee7bc/invoke.js">
+    </script>
+    <div id="container-d4cd9731abd5eab614191a36354ee7bc"></div>
+    """,
+    height=300,  # Adjust depending on ad size
+    width=800,  # Adjust to fit your layout
+    scrolling=False,
+)
+
+components.html(
+    """
+    <script type='text/javascript'
+      src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
+    </script>
+    """,
+    height=0,
+    width=0,
+    scrolling=False,
+)
+
+# =========================================================
+# 📜 Third Banner Ad (468x60)
+# =========================================================
+components.html(
+    """
+    <script type="text/javascript">
+	atOptions = {
+		'key' : '72e674d3fcf49ab599755d0eec4f9191',
+		'format' : 'iframe',
+		'height' : 250,
+		'width' : 300,
+		'params' : {}
+	};
+</script>
+<script type="text/javascript" src="//www.highperformanceformat.com/72e674d3fcf49ab599755d0eec4f9191/invoke.js"></script>
+    """,
+    height=260,  # a bit more than 250px
+    width=310,  # slightly bigger to fit 468px
+    scrolling=False,
+)
+
+# ✅ Scrollbar Ads (Injected JS safely with components.html)
+components.html(
+    """
+    <script type='text/javascript'
+        src='//pl27448332.profitableratecpm.com/79/ff/a4/79ffa4ff1e9a9e5d88238e900ccc5a23.js'>
+    </script>
+    """,
+    height=0,  # keeps it hidden, script still runs
+)
 # # ✅ Extra Direct Link Ad (iframe banner style)
 # st.markdown(
 #     """
